@@ -145,7 +145,7 @@ LICENSE
 ## 开发者
 
 - **kaka**（[ESCc13](https://github.com/ESCc13)）
-- **Publish VarInt**
+- **Publish VarInt** （[Github](https://github.com/public-claude)）
 - **BivUraMLP**
 
 ## 声明
