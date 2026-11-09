@@ -36,6 +36,13 @@ namespace ModPcGUI
 
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
+            // 运行时数据自愈：先保证 config.json 与 user\ 存在，再做任何依赖它们的事。
+            // 官方发行包自带这两样，但从源码编译出来的 bin\Debug\net48 里没有 ——
+            // 缺了会让 CoreNative.CanLaunch 拿到 null 配置直接 NRE，账号列表也永远是空的
+            // （点「登录」只会弹「还没有账号」）。
+            try { EnsureRuntimeData(); }
+            catch (Exception ex) { Term.WriteLine("[init] 运行时数据自愈失败：" + ex.Message); }
+
             try
             {
                 string fpd;
@@ -59,6 +66,35 @@ namespace ModPcGUI
             }
         }
 
+        /// <summary>
+        /// 补齐跑起来必需、但发行包里才有的运行时数据。
+        /// 只补「缺了就直接白屏 / 功能全废」的两样，不动已有文件：
+        ///   user\       —— 账号 json 的存放目录，缺了账号下拉永远是空的
+        ///   config.json —— 版本号 / 服务器地址 / 游戏路径，缺了 app.Temp 为 null
+        /// 默认值取网易正式包的当前值，只作为兜底，用户改过就永不覆盖。
+        /// </summary>
+        private static void EnsureRuntimeData()
+        {
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            string userDir = Path.Combine(baseDir, "user");
+            if (!Directory.Exists(userDir)) Directory.CreateDirectory(userDir);
+
+            string cfgPath = Path.Combine(baseDir, "config.json");
+            if (File.Exists(cfgPath)) return;
+
+            var def = new Login.temp
+            {
+                Version = "1.21.130",
+                url = "https://x19obtcore.nie.netease.com:8443",
+                PE_url = "https://g79obtcore.nie.netease.com:8443",
+                engineVersion = "3.4.5.272725",
+                connect_log = true
+            };
+            File.WriteAllText(cfgPath, JsonConvert.SerializeObject(def));
+            Term.WriteLine("[init] 未找到 config.json，已生成默认配置（服务器 " + def.url + "）\r\n");
+        }
+
         public static string UserDir
         {
             get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "user"); }
@@ -76,6 +112,29 @@ namespace ModPcGUI
             }
             catch { }
             return list;
+        }
+
+        /// <summary>
+        /// 账号文件自检。返回 null 表示看起来正常，否则返回人话描述的毛病。
+        /// 典型坏法：手工粘贴 sauth 时内层引号没转义，外层 JSON 直接不成立 ——
+        /// 这种文件选中后点登录会一路静默失败（错误只写进设置页的日志框），
+        /// 表现就是「登录按钮点了没反应」，所以要在点之前就拦住。
+        /// </summary>
+        public static string CheckAccount(string path)
+        {
+            try
+            {
+                if (!File.Exists(path)) return "文件不存在";
+                string raw = File.ReadAllText(path).Trim();
+                if (raw.Length == 0) return "文件是空的";
+                if (raw.StartsWith("ey") || raw.StartsWith("SDK4399")) return null;  // 纯 sauth JWT，无需解析
+                Newtonsoft.Json.Linq.JObject.Parse(raw);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return "不是合法 JSON（" + ex.Message + "）";
+            }
         }
 
         public static void AddAccount(string name, string cookie)
@@ -101,6 +160,7 @@ namespace ModPcGUI
         {
             if (LoggingIn || Started) return;
             LoggingIn = true;
+            LastError = "";
             Notify();
 
             try

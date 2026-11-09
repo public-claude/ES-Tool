@@ -53,6 +53,26 @@ namespace ModPcGUI
         {
             _logBox.AppendText(s);
             _logBox.ScrollToEnd();
+            LogToFile(s);
+        }
+
+        /// <summary>
+        /// 同步落盘 run.log。界面日志在「设置」页，用户在「启动」页操作时看不到任何反馈，
+        /// 事后也无从查证 —— 登录/下载出问题时这份文件是唯一的现场。
+        /// 超过 512 KB 自动重来，避免无限增长。
+        /// </summary>
+        private void LogToFile(string s)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(s)) return;
+                string f = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "run.log");
+                var fi = new FileInfo(f);
+                if (fi.Exists && fi.Length > 512 * 1024) File.Delete(f);
+                File.AppendAllText(f, "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + s,
+                    System.Text.Encoding.UTF8);
+            }
+            catch { }
         }
 
         // ---------- 业务逻辑（复用原 ES Tool） ----------
@@ -73,13 +93,30 @@ namespace ModPcGUI
         private void RefreshState()
         {
             bool run = AppHost.Started;
-            _status.Text = run ? "●  已连接控制台" : "●  未登录";
+            bool busy = AppHost.LoggingIn;
+            string err = AppHost.LastError;
+
+            _status.Text = run ? "●  已连接控制台" : (busy ? "●  正在登录…" : "●  未登录");
             _uid.Text = "UID: " + (string.IsNullOrEmpty(Http.UID) ? "-" : Http.UID)
-                      + "    ·    「功能」里有全部 184 条命令";
+                      + "    ·    命令 " + Commands.All.Count + " 条";
             try
             {
                 if (_statePill != null)
-                    _statePill.Text = run ? "已连接控制台 · 网易渠道" : "已就绪 · 网易渠道";
+                    _statePill.Text = run ? "已连接控制台 · 网易渠道"
+                                    : (busy ? "正在登录 · 请稍候" : "已就绪 · 网易渠道");
+            }
+            catch { }
+            // 启动页顶部提示：登录进度和失败原因必须出现在用户眼皮底下。
+            // 之前这些信息只写进「设置」页的日志框，用户在启动页点登录就是「一片安静」。
+            try
+            {
+                if (_pageHint != null)
+                {
+                    if (run) _pageHint.Text = "已登录，点「启动游戏」进入客户端";
+                    else if (busy) _pageHint.Text = "正在登录，请稍候…（若弹出浏览器，请完成验证）";
+                    else if (!string.IsNullOrEmpty(err)) _pageHint.Text = "上次登录失败：" + err;
+                    else _pageHint.Text = "选择账号并登录，然后启动客户端";
+                }
             }
             catch { }
             // 登录成功后隐藏「登录 / 添加账号」按钮行，把空间让给账号区
@@ -116,6 +153,18 @@ namespace ModPcGUI
             var item = (i >= 0 && i < _accItems.Count) ? _accItems[i] : null;
             if (item == null) { Wpf.MessageBox.Show("还没有账号，先点「添加账号」。", "ES Tool"); return; }
             string f = item.Path;
+
+            // 账号文件先自检：坏文件（比如手工粘贴时内层引号没转义）会让登录静默失败，
+            // 而错误信息只写进设置页的日志框 —— 表现就是「点了登录没反应」。这里直接说清楚。
+            string bad = AppHost.CheckAccount(f);
+            if (bad != null)
+            {
+                Wpf.MessageBox.Show(
+                    "这个账号文件不能用：\n" + bad + "\n\n" + f
+                    + "\n\n请删掉它重新「添加账号」，或修正 JSON 后再试。",
+                    "ES Tool", Wpf.MessageBoxButton.OK, Wpf.MessageBoxImage.Warning);
+                return;
+            }
 
             string mode = "auto";
             if (_modeBox.SelectedIndex == 1) mode = "pc";
@@ -427,8 +476,10 @@ namespace ModPcGUI
                     Child = grid
                 };
                 row.MouseLeftButtonUp += (s, e) => QueryCandidate(captured);
-                row.MouseEnter += (s, e) => row.Background = Brush("#232A31");
-                row.MouseLeave += (s, e) => row.Background = Brush("#1B1F23");
+                // PCL 式悬停：90ms 颜色过渡，不再是硬切（与 MyCard 的 AaColor 参数一致）
+                PclAnim.HoverBackground(row, "#1B1F23", "#232A31");
+                // 候选逐条上浮出现，步长 25ms（PCL AaStack 的默认间隔）
+                PclAnim.SlideFadeIn(row, 8, PclAnim.Normal, _roomCandList.Children.Count * PclAnim.Step);
 
                 _roomCandList.Children.Add(row);
             }

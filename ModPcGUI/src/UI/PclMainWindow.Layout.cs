@@ -35,19 +35,20 @@ namespace ModPcGUI
         private int _navIndex;
         private bool _navGuard;
 
-        private static readonly string[] NavNames = { "启动", "联机大厅", "功能", "设置", "更多" };
+        private static readonly string[] NavNames = { "启动", "下载", "联机大厅", "设置", "更多" };
 
         // PCL FormMain.xaml 标题栏 RadioButton 的原版图标路径与 LogoScale，1:1
         private static readonly string[] NavLogos =
         {
             "M52.1,164.5c-1.4,0-3.1-0.5-4.2-1.3c-2.6-1.7-4-4.2-4-7V43.8c0-2.9,1.6-5.8,4.1-7c1.2-0.8,2.7-1.2,4.1-1.2c1.5,0,2.9,0.4,4.2,1.2L153.1,93c0,0,0.1,0,0.1,0.1c2.6,1.7,4,4.2,4,7c0,3-1.7,5.8-4.2,7.1l-96.8,56.2C55.1,164,53.5,164.5,52.1,164.5z M60.4,142.1l72.1-42.1L60.4,58.2V142.1z",
+            // 下载：PCL FormMain BtnTitleSelect1 原版图标与 LogoScale
+            "M955 610h-59c-15 0-29 13-29 29v196c0 15-13 29-29 29h-649c-15 0-29-13-29-29v-196c0-15-13-29-29-29h-59c-15 0-29 13-29 29V905c0 43 35 78 78 78h787c43 0 78-35 78-78V640c0-15-13-29-29-29zM492 740c11 11 29 11 41 0l265-265c11-11 11-29 0-41l-41-41c-11-11-29-11-41 0l-110 110c-11 11-33 3-33-13V68C571 53 555 39 541 39h-59c-15 0-29 13-29 29v417c0 17-21 25-33 13l-110-110c-11-11-29-11-41 0L226 433c-11 11-11 29 0 41L492 740z",
             // 联机大厅：三层同心（大厅/房间/玩家）
             "M10,0 L20,10 L10,20 L0,10 Z M10,4.6 L15.4,10 L10,15.4 L4.6,10 Z",
-            "M955 610h-59c-15 0-29 13-29 29v196c0 15-13 29-29 29h-649c-15 0-29-13-29-29v-196c0-15-13-29-29-29h-59c-15 0-29 13-29 29V905c0 43 35 78 78 78h787c43 0 78-35 78-78V640c0-15-13-29-29-29zM492 740c11 11 29 11 41 0l265-265c11-11 11-29 0-41l-41-41c-11-11-29-11-41 0l-110 110c-11 11-33 3-33-13V68C571 53 555 39 541 39h-59c-15 0-29 13-29 29v417c0 17-21 25-33 13l-110-110c-11-11-29-11-41 0L226 433c-11 11-11 29 0 41L492 740z",
             "M940.4 463.7L773.3 174.2c-17.3-30-49.2-48.4-83.8-48.4H340.2c-34.6 0-66.5 18.5-83.8 48.4L89.2 463.7c-17.3 30-17.3 66.9 0 96.8L256.4 850c17.3 30 49.2 48.4 83.8 48.4h349.2c34.6 0 66.5-18.5 83.8-48.4l167.2-289.5c17.3-29.9 17.3-66.8 0-96.8z m-94.6 96.8L725.9 768.1c-17.3 30-49.2 48.4-83.8 48.4H387.5c-34.6 0-66.5-18.5-83.8-48.4L183.9 560.5c-17.3-30-17.3-66.9 0-96.8l119.8-207.5c17.3-30 49.2-48.4 83.8-48.4h254.6c34.6 0 66.5 18.5 83.8 48.4l119.8 207.5c17.3 30 17.3 66.9 0.1 96.8z M522.3 321.2c-2.5-0.1-5-0.2-7.5-0.2-119.9 0-214 110.3-186.3 235 15.8 70.9 71.5 126.6 142.4 142.4 17.5 3.9 34.7 5.4 51.4 4.7 102.1-3.9 183.6-87.9 183.6-191 0.1-103-81.5-187-183.6-190.9z m68.6 269.1c-18.5 18-43 28.9-68.6 30.7l-6 0.3c-30.2 0.4-58.6-11.4-79.7-33-19.5-20.1-30.7-47-30.9-75-0.3-29.6 11.1-57.4 32-78.3 20.6-20.6 48-32 77.2-32 2.5 0 5 0.1 7.5 0.3 26.7 1.8 51.5 13.2 70.5 32.5 19.6 20 30.8 46.9 31.2 74.9 0.2 30.2-11.5 58.6-33.2 79.6z",
             "M364 0h-273C40 0 0 40 0 91v273C0 414 40 455 91 455h273C414 455 455 414 455 364V91C455 40 414 0 364 0zM341 341H113V113h227v227zM933 0h-273C609 0 568 40 568 91v273c0 50 40 91 91 91h273C983 455 1024 414 1024 364V91c0-50-40-91-90-91zM910 341h-227V113h227v227zM364 568h-273C40 568 0 609 0 659v273c0 50 40 91 91 91h273C414 1024 455 983 455 932v-273C455 609 414 568 364 568zM341 910H113v-227h227v227zM933 568h-273c-50 0-91 40-91 91v273c0 50 40 91 91 91h273c50 0 90-40 90-91v-273c0-50-40-90-90-90zM910 910h-227v-227h227v227z"
         };
-        private static readonly double[] NavLogoScales = { 0.9, 1.0, 0.9, 1.1, 0.93 };
+        private static readonly double[] NavLogoScales = { 0.9, 0.9, 1.0, 1.1, 0.93 };
 
         public PclMainWindow()
         {
@@ -68,22 +69,11 @@ namespace ModPcGUI
             var app = Wpf.Application.Current;
             if (app != null && app.Resources["PclStylesLoaded"] == null)
             {
-                // PCL2 完整前端资源（颜色 + 控件样式/模板，原样取自其 Application.xaml）
-                // 若 Boot 已合并过（PclStylesLoaded 标记）则跳过
-                if (app.Resources["PclStylesLoaded"] == null)
-                {
-                    try
-                    {
-                        System.Reflection.Assembly.LoadFrom(
-                            System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pcl", "PCL.Core.dll"));
-                    }
-                    catch { }
-                    app.Resources.MergedDictionaries.Add(new Wpf.ResourceDictionary
-                    {
-                        Source = new Uri("PclStyles.xaml", UriKind.Relative)
-                    });
-                }
-                app.Resources["PclStylesLoaded"] = true;
+                // 走和 Boot 同一条加载路径：读 pcl\PclStyles.xaml 再 XamlReader.Parse。
+                // 不能再用 `Source = new Uri("PclStyles.xaml", UriKind.Relative)`——
+                // 那份资源已经改成运行时文件（csproj 里从 Page 移除），程序集里没有它，
+                // 这条 URI 会直接抛 IOException，把 PCL UI 顶回经典界面。
+                LoadPclStyles(app);
             }
 
             var blue = Brush("#1370f3");       // PCL ColorBrush3
@@ -228,12 +218,14 @@ namespace ModPcGUI
             };
             Term.OnOutput += (t, nl, c) =>
             {
+                string chunk = (t ?? "") + (nl ? "\r\n" : "");
                 try
                 {
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        _logBox.AppendText((t ?? "") + (nl ? "\r\n" : ""));
+                        _logBox.AppendText(chunk);
                         _logBox.ScrollToEnd();
+                        LogToFile(chunk);   // 与界面日志同源，登录/下载出问题能事后查
                     }));
                 }
                 catch { }
@@ -244,13 +236,20 @@ namespace ModPcGUI
             };
             Loaded += (s, e) =>
             {
+                // PCL 式窗口入场：左右面板错峰上浮淡入（PCL FormMain 在 Loaded 里起 AniStart 同款）
+                try
+                {
+                    PclAnim.SlideFadeIn(leftPanel, 10, PclAnim.Slow, 20);
+                    PclAnim.SlideFadeIn(rightPanel, 10, PclAnim.Slow, 70);
+                }
+                catch { }
+
                 try { AppHost.Init(); } catch (Exception ex) { AppendLog("[init] " + ex.Message + "\r\n"); }
                 RefreshAccounts();
                 LoadUi();
                 RefreshState();
                 UpdateLaunchCaption();
                 AppendLog("ES Tool 已就绪（PCL2 原生 UI）\r\n");
-                AppendLog("共 " + Commands.All.Count + " 条命令可用，切到「功能」查看\r\n");
             };
         }
 
@@ -341,7 +340,18 @@ namespace ModPcGUI
                 Margin = new Wpf.Thickness(0, 0, 5, 0)
             };
             WpfC.TextBlock.SetFontSize(bLogin, 13);
-            bLogin.Click += (s, e) => DoLogin();
+            // Click + PreviewMouseLeftButtonUp 双通道：PCL 的 MyButton 模板在少数情况下
+            // 会把 Click 吃掉（SetNameDialog.cs 里踩过同一个坑），这里用 400ms 防抖保证
+            // 一次点击只跑一次 DoLogin，但绝不会「点了没反应」。
+            DateTime lastLogin = DateTime.MinValue;
+            Action fireLogin = () =>
+            {
+                if ((DateTime.UtcNow - lastLogin).TotalMilliseconds < 400) return;
+                lastLogin = DateTime.UtcNow;
+                DoLogin();
+            };
+            bLogin.Click += (s, e) => fireLogin();
+            bLogin.PreviewMouseLeftButtonUp += (s, e) => fireLogin();
             var bAdd = new PCL.MyButton
             {
                 Text = "添加账号",
@@ -439,8 +449,8 @@ namespace ModPcGUI
         private void BuildPages(SolidColorBrush blue, SolidColorBrush text, SolidColorBrush sub)
         {
             _pages[0] = BuildLaunchPage(blue, text, sub);
-            _pages[1] = BuildLobbyPage(blue, text, sub);
-            _pages[2] = BuildFeaturePage(blue, text, sub);
+            _pages[1] = BuildDownloadPage(blue, text, sub);
+            _pages[2] = BuildLobbyPage(blue, text, sub);
             _pages[3] = BuildSetupPage(blue, text, sub);
             _pages[4] = BuildMorePage(blue, text, sub);
             foreach (var kv in _pages)
@@ -495,7 +505,7 @@ namespace ModPcGUI
                 Margin = new Wpf.Thickness(0, 2, 0, 2),
                 Child = _rbLobby
             };
-            lobbyHit.MouseLeftButtonUp += (s, e) => NavTo(1);
+            lobbyHit.MouseLeftButtonUp += (s, e) => NavTo(2);
             sp.Children.Add(lobbyHit);
 
             var addrRow = new WpfC.Grid { Margin = new Wpf.Thickness(0, 8, 0, 4) };
@@ -595,93 +605,7 @@ namespace ModPcGUI
             card.Children.Add(sp);
             root.Children.Add(card);
 
-            // 运行日志卡片已按需求移到「功能」页（BuildFeaturePage）
-
-            return sv;
-        }
-
-        private Wpf.FrameworkElement BuildFeaturePage(SolidColorBrush blue, SolidColorBrush text, SolidColorBrush sub)
-        {
-            var sv = new WpfC.ScrollViewer { VerticalScrollBarVisibility = WpfC.ScrollBarVisibility.Auto };
-            var root = new WpfC.StackPanel { Margin = new Wpf.Thickness(20, 16, 20, 16) };
-            sv.Content = root;
-
-            root.Children.Add(new WpfC.TextBlock
-            {
-                Text = "原程序全部 184 条命令，按 11 类分组",
-                FontSize = 11,
-                Foreground = sub,
-                Margin = new Wpf.Thickness(2, 0, 0, 12)
-            });
-
-            var card = new PCL.MyCard { Title = "命令分类", Margin = new Wpf.Thickness(0, 0, 0, 14) };
-            var wrap = new WpfC.WrapPanel { Margin = new Wpf.Thickness(15, 35, 15, 15) };
-            foreach (var c in Commands.CategoryOrder)
-            {
-                var b = new PCL.MyButton
-                {
-                    Text = c + "  (" + Commands.ByCategory(c).Count + ")",
-                    Width = 168,
-                    Height = 34,
-                    Margin = new Wpf.Thickness(0, 0, 10, 10)
-                };
-                WpfC.TextBlock.SetFontSize(b, 12.5);
-                b.Click += (s, e) => OpenFeatures();
-                wrap.Children.Add(b);
-            }
-            card.Children.Add(wrap);
-            root.Children.Add(card);
-
-            var card2 = new PCL.MyCard { Title = "高级 · 直接发送命令", Margin = new Wpf.Thickness(0, 0, 0, 14) };
-            var sp2 = new WpfC.StackPanel { Margin = new Wpf.Thickness(15, 35, 15, 15) };
-            var row = new WpfC.Grid();
-            row.ColumnDefinitions.Add(new WpfC.ColumnDefinition { Width = new Wpf.GridLength(1, Wpf.GridUnitType.Star) });
-            row.ColumnDefinitions.Add(new WpfC.ColumnDefinition { Width = Wpf.GridLength.Auto });
-            var raw = new PCL.MyTextBox { Height = 30, FontSize = 12, HintText = "输入任意命令后回车，例如 list" };
-            WpfC.Grid.SetColumn(raw, 0);
-            row.Children.Add(raw);
-            var send = new PCL.MyButton
-            {
-                Text = "发送",
-                Width = 80,
-                Height = 30,
-                ColorType = PCL.MyButton.ColorState.Highlight,
-                Margin = new Wpf.Thickness(8, 0, 0, 0)
-            };
-            WpfC.TextBlock.SetFontSize(send, 12);
-            WpfC.Grid.SetColumn(send, 1);
-            row.Children.Add(send);
-            Action submit = () =>
-            {
-                string t = raw.Text.TrimEnd('\r', '\n');
-                raw.Text = "";
-                if (t.Length == 0) return;
-                if (!AppHost.Started) { AppendLog("还没有登录\r\n"); return; }
-                AppendLog("› " + t + "\r\n");
-                Term.Submit(t);
-            };
-            send.Click += (s, e) => submit();
-            raw.KeyDown += (s, e) => { if (e.Key == Wpf.Input.Key.Enter) { submit(); e.Handled = true; } };
-            sp2.Children.Add(row);
-            card2.Children.Add(sp2);
-            root.Children.Add(card2);
-
-            // ---- 卡片：运行日志（自启动页移入功能页） ----
-            var logCard = new PCL.MyCard { Title = "运行日志", Margin = new Wpf.Thickness(0, 0, 0, 14) };
-            var lsp = new WpfC.StackPanel { Margin = new Wpf.Thickness(15, 35, 15, 15) };
-            _logBox.Height = 150;
-            _logBox.IsReadOnly = true;
-            _logBox.AcceptsReturn = true;
-            _logBox.TextWrapping = Wpf.TextWrapping.NoWrap;
-            _logBox.VerticalScrollBarVisibility = WpfC.ScrollBarVisibility.Auto;
-            _logBox.FontSize = 11;
-            lsp.Children.Add(_logBox);
-            _uid.FontSize = 10.5;
-            _uid.Foreground = sub;
-            _uid.Margin = new Wpf.Thickness(2, 8, 0, 0);
-            lsp.Children.Add(_uid);
-            logCard.Children.Add(lsp);
-            root.Children.Add(logCard);
+            // 运行日志卡片在「设置」页（BuildSetupPage）
 
             return sv;
         }
@@ -753,6 +677,23 @@ namespace ModPcGUI
             sp.Children.Add(hint);
             card.Children.Add(sp);
             root.Children.Add(card);
+
+            // ---- 卡片：运行日志（原「功能」页已删除，日志随诊断一起放在设置页） ----
+            var logCard = new PCL.MyCard { Title = "运行日志", Margin = new Wpf.Thickness(0, 0, 0, 14) };
+            var lsp = new WpfC.StackPanel { Margin = new Wpf.Thickness(15, 35, 15, 15) };
+            _logBox.Height = 150;
+            _logBox.IsReadOnly = true;
+            _logBox.AcceptsReturn = true;
+            _logBox.TextWrapping = Wpf.TextWrapping.NoWrap;
+            _logBox.VerticalScrollBarVisibility = WpfC.ScrollBarVisibility.Auto;
+            _logBox.FontSize = 11;
+            lsp.Children.Add(_logBox);
+            _uid.FontSize = 10.5;
+            _uid.Foreground = sub;
+            _uid.Margin = new Wpf.Thickness(2, 8, 0, 0);
+            lsp.Children.Add(_uid);
+            logCard.Children.Add(lsp);
+            root.Children.Add(logCard);
 
             return sv;
         }
@@ -839,16 +780,6 @@ namespace ModPcGUI
                 });
             }
 
-            var bMore = new PCL.MyButton
-            {
-                Text = "打开全部命令",
-                Width = 160,
-                Height = 30,
-                Margin = new Wpf.Thickness(0, 14, 0, 0),
-                ColorType = PCL.MyButton.ColorState.Highlight
-            };
-            bMore.Click += (s, e) => OpenFeatures();
-            sp.Children.Add(bMore);
             card.Children.Add(sp);
             root.Children.Add(card);
 
@@ -858,6 +789,7 @@ namespace ModPcGUI
         // ---------- 导航 ----------
         private void NavTo(int idx)
         {
+            int prev = _navIndex;
             _navIndex = idx;
             if (!_navGuard)
             {
@@ -870,11 +802,26 @@ namespace ModPcGUI
                 catch { }
                 finally { _navGuard = false; }
             }
+            // 先收弹层再切可见性，避免 Popup 在布局更新期间被销毁（见 CloseOpenDropDowns 注释）
+            if (prev != idx) CloseOpenDropDowns();
             foreach (var kv in _pages)
                 kv.Value.Visibility = kv.Key == idx ? Wpf.Visibility.Visible : Wpf.Visibility.Collapsed;
 
+            // 页面切换：新页面淡入 + 轻微上浮，曲线/时长与 PCL 的 MyCard 页面切换同源
+            if (prev != idx)
+            {
+                Wpf.FrameworkElement page;
+                if (_pages.TryGetValue(idx, out page) && page != null)
+                {
+                    try { PclAnim.SlideFadeIn(page, 10, PclAnim.Normal); } catch { }
+                }
+            }
+
+            // 下载页：首次进入补默认路径并按需拉版本列表（对应 PCL 的 PageLoaded）
+            if (idx == DownloadPageIndex) EnsureDownloadPageReady();
+
             // 联机大厅：第一次进去且已登录，自动拉一次全服在线地图池，不用先点搜索
-            if (idx == 1 && !_lbLoaded && AppHost.Started)
+            if (idx == 2 && !_lbLoaded && AppHost.Started)
             {
                 _lbLoaded = true;
                 LobbySearch();
@@ -1047,6 +994,45 @@ namespace ModPcGUI
                 d = System.Windows.Media.VisualTreeHelper.GetParent(d);
             }
             return false;
+        }
+
+        /// <summary>
+        /// 收掉所有还开着的下拉弹层。
+        /// WPF for .NET Framework 有个已知缺陷：Popup 在布局更新期间被销毁会在
+        /// Popup.OnWindowResize 里抛 NullReferenceException，而且销毁流程被打断后会
+        /// 由 DispatcherTimer 反复重试，日志里就是每秒重复的两条 NRE。
+        /// 切页会触发整棵树的可见性级联 + UpdateLayout，正好撞上，所以切页前先主动关闭。
+        /// </summary>
+        private void CloseOpenDropDowns()
+        {
+            try
+            {
+                var list = new System.Collections.Generic.List<System.Windows.Controls.ComboBox>();
+                CollectVisuals(this, list);
+                for (int i = 0; i < list.Count; i++)
+                {
+                    try { if (list[i].IsDropDownOpen) list[i].IsDropDownOpen = false; }
+                    catch { }
+                }
+            }
+            catch { }
+        }
+
+        private static void CollectVisuals<T>(Wpf.DependencyObject root, System.Collections.Generic.List<T> sink)
+            where T : Wpf.DependencyObject
+        {
+            int n;
+            try { n = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); }
+            catch { return; }
+            for (int i = 0; i < n; i++)
+            {
+                Wpf.DependencyObject c;
+                try { c = System.Windows.Media.VisualTreeHelper.GetChild(root, i); }
+                catch { continue; }
+                var hit = c as T;
+                if (hit != null) sink.Add(hit);
+                CollectVisuals(c, sink);
+            }
         }
 
         private static SolidColorBrush Brush(string hex)

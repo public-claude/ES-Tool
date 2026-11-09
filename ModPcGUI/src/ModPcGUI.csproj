@@ -24,6 +24,17 @@
     <!-- PclStyles.xaml 已改为运行时 XamlReader.Parse 加载（其程序集名带空格，
          无法通过 WPF 编译期的 clr-namespace URI 校验），从 Page 自动包含里排除 -->
     <Page Remove="PclStyles.xaml" />
+    <!-- SDK 默认的 None 通配项也会拾到它，先摘掉再按自定义 TargetPath 加回来，避免重复项 -->
+    <None Remove="PclStyles.xaml" />
+    <!-- 运行时从 BaseDirectory\pcl\PclStyles.xaml 读取（PclMainWindow.LoadPclStyles），
+         所以按同样的相对路径拷到输出目录；不要打包进程序集当 Page——里面引用了
+         `clr-namespace:PCL;assembly=Plain Craft Launcher 2`，编译期解析不了。
+         注意：目标路径与 pcl\ 下已有的同名文件会互相覆盖，以本文件为准。 -->
+    <None Include="PclStyles.xaml">
+      <Link>pcl\PclStyles.xaml</Link>
+      <TargetPath>pcl\PclStyles.xaml</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -54,6 +65,7 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Web" />

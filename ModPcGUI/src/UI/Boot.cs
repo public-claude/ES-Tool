@@ -114,7 +114,29 @@ namespace ModPcGUI
                     // 一旦触发就是整进程闪退；这里记入 crash.log 并继续运行
                     wpf.DispatcherUnhandledException += (s, e) =>
                     {
-                        Log("Dispatcher", e.Exception.ToString());
+                        try
+                        {
+                            var ex = e.Exception;
+                            if (IsKnownPclNoise(ex))
+                            {
+                                // 同一签名 60 秒内只记首次：这类异常由 DispatcherTimer 每秒重试，
+                                // 全量记录会把 crash.log 刷到几 MB，反而盖住真正的新问题
+                                string key = (ex.StackTrace ?? "").Split('\n')[0].Trim();
+                                DateTime last;
+                                _noiseStamp.TryGetValue(key, out last);
+                                if ((DateTime.Now - last).TotalSeconds < 60)
+                                {
+                                    e.Handled = true;
+                                    return;
+                                }
+                                _noiseStamp[key] = DateTime.Now;
+                                Log("Dispatcher", ex.ToString());
+                                e.Handled = true;
+                                return;
+                            }
+                            Log("Dispatcher", ex.ToString());
+                        }
+                        catch { }
                         e.Handled = true;
                     };
                     wpf.ShutdownMode = System.Windows.ShutdownMode.OnMainWindowClose;
@@ -241,6 +263,27 @@ namespace ModPcGUI
                     System.Text.Encoding.UTF8);
             }
             catch { }
+        }
+
+        /// <summary>已知噪音签名 -> 上次记录时间（用于 crash.log 去重）</summary>
+        private static readonly System.Collections.Generic.Dictionary<string, DateTime> _noiseStamp
+            = new System.Collections.Generic.Dictionary<string, DateTime>();
+
+        /// <summary>
+        /// 判断是否为「PCL 控件与宿主环境不兼容」导致的已知噪音异常。
+        /// 只认两个确切签名，其余异常一律照常记录，避免掩盖新问题：
+        /// 1) Popup.OnWindowResize —— WPF(.NET Framework) 在弹层销毁期间重排时的 NRE；
+        /// 2) MyScrollViewer_IsVisibleChanged —— PCL 该回调未判空直接读 FrmMain（宿主无此单例）。
+        /// 第 2 类已在 PclStyles.xaml 里通过改用原生 ScrollViewer 消除，
+        /// 这里只是兜底：万一别处又冒出同类异常，也不至于被每秒重试刷爆日志。
+        /// </summary>
+        private static bool IsKnownPclNoise(Exception ex)
+        {
+            if (!(ex is NullReferenceException)) return false;
+            string st = ex.StackTrace;
+            if (string.IsNullOrEmpty(st)) return false;
+            return st.IndexOf("Popup.OnWindowResize", StringComparison.Ordinal) >= 0
+                || st.IndexOf("MyScrollViewer_IsVisibleChanged", StringComparison.Ordinal) >= 0;
         }
 
         private static void SelfTest()
